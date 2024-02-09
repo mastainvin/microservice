@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 
 app.use(express.static('static'));
 app.use(express.json())
@@ -9,6 +9,7 @@ app.use(express.json())
 // get word list from file ./data/liste_francais_utf8.txt
 // each line contains a word
 const fs = require('fs')
+const {hostname} = require("os");
 const wordList = fs.readFileSync('./data/liste_francais_utf8.txt', 'utf8').split('\n')
 
 
@@ -103,6 +104,15 @@ function updateState(state) {
     return state;
 }
 
+
+app.get('/port', (req, res) => {
+    res.send("SUMOT APP working on " + hostname() + " port " + port);
+});
+
+
+app.get('/healthcheck', (req, res) => {
+    res.status(200).send("Heathcheck OK");
+})
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
