@@ -10,7 +10,15 @@ app.use(express.json())
 // each line contains a word
 const fs = require('fs')
 const {hostname} = require("os");
-const wordList = fs.readFileSync('./data/liste_francais_utf8.txt', 'utf8').split('\n')
+const wordList = fs.readFileSync('./data/liste_francais_utf8.txt', 'utf8').split('\n');
+const wordListClean = wordList.map(word => removeAccentsAndSpecialChars(word));
+
+function removeAccentsAndSpecialChars(str) {
+    str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    str = str.replace(/[^a-zA-Z]/g, '');
+
+    return str;
+}
 
 
 function getIndex() {
@@ -19,7 +27,7 @@ function getIndex() {
     const dayOfYear = getDayOfYear(date); // Fonction pour obtenir le jour de l'année
     const randomSeed = dayOfYear * 123456; // Utiliser le jour de l'année comme graine aléatoire
     const random = (randomSeed * 9301 + 49297) % 233280;
-    const index = Math.floor(random / 233280 * wordList.length);
+    const index = Math.floor(random / 233280 * wordListClean.length);
     return index;
 }
 
@@ -32,7 +40,8 @@ function getDayOfYear(date) {
 }
 
 
-const word = wordList[getIndex()]
+
+const word = wordListClean[getIndex()];
 const charMap = {}
 for (let i = 0; i < word.length; i++) {
     if (charMap[word[i]]) {
@@ -59,8 +68,7 @@ app.post('/in_dict', (req, res) => {
     for (let i = 0; i < state.length; i++) {
         wordTested += state[i]["char"];
     }
-    wordTested += word[word.length-1];
-    res.send(wordList.includes(wordTested));
+    res.send(wordListClean.includes(wordTested));
 })
 
 
@@ -77,8 +85,8 @@ function updateState(state) {
         "char": wordList[0],
         "status": 0
     }
-    for (let i = 1; i < wordList.length-1; i++) {
-        if (state.length < wordList.length-1) {
+    for (let i = 1; i < wordList.length; i++) {
+        if (state.length < wordList.length) {
             state.push({
                 "char": null,
                 "status": 2
@@ -90,7 +98,7 @@ function updateState(state) {
         }
     }
 
-    for (let i = 1; i < wordList.length-1; i++) {
+    for (let i = 1; i < wordList.length; i++) {
         if (wordList[i] !== state[i]["char"]) {
             if (charMapCopy[state[i]["char"]] > 0) {
                 state[i]["status"] = 1;
