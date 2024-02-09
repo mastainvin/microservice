@@ -183,11 +183,9 @@ $(document).ready(function() {
                         pointer++;
                     }
 
-                    // remove all letters not found
-                    for (let i = 0; i < state.length; i++) {
-                        if (state[i]["status"] === 1 || state[i]["status"] === 2) {
-                            state[i] = {"char": null, "status": 2};
-                        }
+                    // remove all letters
+                    for (let i = 1; i < state.length; i++) {
+                        state[i] = {"char": null, "status": 2};
                     }
 
                     printState();

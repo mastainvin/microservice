@@ -1,0 +1,26 @@
+version: '3'
+services:
+  motus1:
+    image: mastainvinecole/sumot
+    environment:
+      - PORT=3000
+    networks:
+      - motus_network
+
+  motus2:
+    image: mastainvinecole/sumot
+    environment:
+      - PORT=3000
+    networks:
+      - motus_network
+
+  haproxy:
+    image: mastainvinecole/haproxy-service
+    ports:
+      - "3001:3001"
+    networks:
+      - motus_network
+
+networks:
+  motus_network:
+    driver: bridge
