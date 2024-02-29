@@ -2,13 +2,15 @@ $(document).ready(function() {
     let state = [];
     let pointer = 1;
     let remainingAttempts = null;
+    let gamesWon = 0;
+    let attempts = 0;
 
     initGame();
-
     function initGame() {
         state = [];
         pointer = 1;
         remainingAttempts = null;
+
 
         // remove previous words
         $("#previousWords").html("");
@@ -23,13 +25,49 @@ $(document).ready(function() {
             }),
             success: function(data) {
                 state = data;
-                remainingAttempts = state.length;
+                remainingAttempts = state.length / 2;
                 printState(data);
                 showAttempts();
             }
         });
+
+        get_score_from_bdd();
     }
 
+    function update_score() {
+        let avg = 0;
+        if (gamesWon !== 0) {
+            avg = attempts / gamesWon;
+        }
+        $('#score').html("Games won: " + gamesWon + " - Avg: " + avg.toFixed(2));
+    }
+
+    function get_score_from_bdd() {
+        $.ajax({
+            url: '/score',
+            type: 'GET',
+            success: function(data) {
+                gamesWon = data.gamesWon;
+                attempts = data.attempts;
+                update_score();
+            }
+        });
+    }
+
+    function set_score_in_bdd(gamesWon, attempts) {
+        $.ajax({
+            url: '/score',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                "gamesWon": gamesWon,
+                "attempts": attempts
+            }),
+            success: function(data) {
+                get_score_from_bdd();
+            }
+        });
+    }
 
     function printState() {
         $('#word').html(createHTML());
@@ -168,20 +206,22 @@ $(document).ready(function() {
             }),
             success: function(data) {
                 state = data;
+                attempts++;
                 saveState();
 
                 // if every letter is good
                 if (state.every((el) => el["status"] === 0)) {
                     printState();
                     alert("You won!");
+                    set_score_in_bdd(gamesWon+1, attempts);
                     initGame();
                 } else {
+                    // not won
+
 
                     // go to first letter not found
                     pointer = 1;
-                    while (pointer < state.length && state[pointer]["status"] === 0) {
-                        pointer++;
-                    }
+
 
                     // remove all letters
                     for (let i = 1; i < state.length; i++) {
@@ -194,6 +234,7 @@ $(document).ready(function() {
                     remainingAttempts--;
                     if (remainingAttempts === 0) {
                         alert("You lost!");
+                        set_score_in_bdd(gamesWon, attempts);
                         initGame();
                     }
 

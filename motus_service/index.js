@@ -1,9 +1,12 @@
 const express = require('express')
+const axios = require('axios')
 const app = express()
 const port = process.env.PORT || 3000
 
 app.use(express.static('static'));
 app.use(express.json())
+
+const request = require('request');
 
 
 // get word list from file ./data/liste_francais_utf8.txt
@@ -42,6 +45,8 @@ function getDayOfYear(date) {
 
 
 const word = wordListClean[getIndex()];
+console.log(word);
+
 const charMap = {}
 for (let i = 0; i < word.length; i++) {
     if (charMap[word[i]]) {
@@ -58,7 +63,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/word', (req, res) => {
-    res.send(word)
+    res.send(word);
 })
 
 
@@ -76,6 +81,28 @@ app.post('/submit', (req, res) => {
     const state = req.body.state;
 
     res.send(updateState(state));
+
+})
+
+
+app.get('/score', (req, res) => {
+    //call the application deployed on PORT 3002 with the end point /getscore
+
+    console.log("calling score service");
+    axios.get('http://score-service:3002/getscore')
+        .then(response => {
+            res.send(response.data);
+        })
+        .catch(error => {
+            res.send({gamesWon: 0, attempts: 0});
+        });
+
+})
+
+app.post('/score', (req, res) => {
+        axios.post('http://score-service:3002/setscore', req.body).then(r => {
+            res.send(r.data);
+        });
 })
 
 function updateState(state) {

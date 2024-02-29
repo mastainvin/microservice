@@ -1,23 +1,34 @@
 version: '3'
 services:
   motus1:
-    image: mastainvinecole/sumot
+    image: mastainvinecole/sumot:latest
     environment:
       - PORT=3000
     networks:
       - motus_network
-
   motus2:
-    image: mastainvinecole/sumot
+    image: mastainvinecole/sumot:latest
     environment:
       - PORT=3000
     networks:
       - motus_network
-
+  score-service:
+    image: mastainvinecole/score-service:latest
+    environment:
+      - PORT=3002
+    networks:
+      - motus_network
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - motus_network
   haproxy:
     image: mastainvinecole/haproxy-service
     ports:
-      - "3001:3001"
+      - "3005:3001"
     networks:
       - motus_network
 
