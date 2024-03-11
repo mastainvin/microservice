@@ -1,5 +1,5 @@
 {
-  "name": "score_service",
+  "name": "authorization_service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,7 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "crypto": "^1.0.1",
+    "express": "^4.18.3",
+    "express-jwt": "^8.4.1",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
     "redis": "^4.6.13"
   }
 }

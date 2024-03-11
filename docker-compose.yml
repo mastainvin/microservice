@@ -1,15 +1,22 @@
 version: '3'
 services:
-  motus1:
-    image: mastainvinecole/sumot:latest
+  motus:
+    image: mastainvinecole/motus-service:latest
     environment:
       - PORT=3000
+      - LOKI=http://loki:3100
     networks:
       - motus_network
-  motus2:
-    image: mastainvinecole/sumot:latest
+      - monitor-net
+    deploy:
+      mode: replicated
+      replicas: 2
+  authorization-service:
+    image: mastainvinecole/authorization-service:latest
     environment:
-      - PORT=3000
+      - PORT=3003
+    ports:
+      - "3003:3003"
     networks:
       - motus_network
   score-service:
@@ -21,8 +28,11 @@ services:
   redis:
     image: redis
     container_name: redis
+    command: --port 6380
     ports:
-      - "6379:6379"
+      - "6380:6380"
+    expose:
+      - "6380"
     networks:
       - motus_network
   haproxy:
@@ -31,7 +41,59 @@ services:
       - "3005:3001"
     networks:
       - motus_network
+      - monitor-net
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - monitor-net
+  loki:
+    image: grafana/loki
+    container_name: loki
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+    networks:
+      - monitor-net
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    networks:
+      - monitor-net
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    ports:
+      - 9100:9100
+    networks:
+      - monitor-net
 networks:
   motus_network:
     driver: bridge
+  monitor-net:
+      driver: bridge

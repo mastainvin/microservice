@@ -16,8 +16,12 @@ resolver.resolve4('redis', (err, addresses) => {
 
 
 const app = express();
+
+const cors = require('cors');
+app.use(cors());
+
 const client = redis.createClient({
-    url: 'redis://redis:6379'
+    url: 'redis://redis:6380'
 });
 
 (async () => {
@@ -41,18 +45,21 @@ app.use(bodyParser.json());
 
 // Endpoint to get the score
 app.get('/getscore', (req, res) => {
-    client.get('score')
+    const {username} = req.query;
+    client.get('score:' + username)
         .then(reply => {
             let score;
+            console.log(reply);
             if (reply) {
                 score = JSON.parse(reply);
             } else {
                 // If score doesn't exist, initialize with default values
                 score = {gamesWon: 0, attempts: 0};
-                client.set('score', JSON.stringify(score)).then(() => {
+                client.set('score:' + username, JSON.stringify(score)).then(() => {
                     console.log('Score initialized');
                 });
             }
+            console.log('Getting score:', username, score);
             res.json(score);
         })
         .catch(err => {
@@ -63,13 +70,14 @@ app.get('/getscore', (req, res) => {
 
 // Endpoint to set the score
 app.post('/setscore',  (req, res) => {
-    const {gamesWon, attempts} = req.body;
+    const {username, gamesWon, attempts} = req.body;
     if (isNaN(gamesWon) || isNaN(attempts)) {
         res.status(400).send('Games won and attempts must be numbers');
         return;
     }
     const score = JSON.stringify({gamesWon, attempts});
-    client.set('score', score)
+    console.log('Setting score:', username, score);
+    client.set('score:' + username, score)
         .then(reply => {
             res.send('Score updated successfully');
         })

@@ -5,6 +5,28 @@ $(document).ready(function() {
     let gamesWon = 0;
     let attempts = 0;
 
+    $.ajax({
+        url: '/username',
+        type: 'GET',
+        success: function(data) {
+            if (data) {
+                $("#username").html(data);
+            }
+        }
+    });
+
+
+    $("#logout").click(function() {
+        $.ajax({
+            url: '/logout',
+            type: 'GET',
+            success: function(data) {
+                window.location.href = "/";
+            }
+        });
+    });
+
+
     initGame();
     function initGame() {
         state = [];
@@ -30,6 +52,8 @@ $(document).ready(function() {
                 showAttempts();
             }
         });
+
+
 
         get_score_from_bdd();
     }
