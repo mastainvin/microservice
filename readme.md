@@ -29,13 +29,13 @@ docker-compose up --build
 
 Voici l'architecture générale de l'application :
 
-![Architecture](./architecture.png)
+![Architecture](images/architecture.png)
 
 ## Sequence diagram
 
 Voici le diagramme de séquence de l'application :
 
-![Sequence diagram](./sequence_diagram.png)
+![Sequence diagram](images/sequence_diagram.png)
 
 Lorsque l'utilisateur lance l'application et que sa session n'est pas encore définie, il est redirigé vers le microservice d'authentification. Une fois authentifié, il est redirigé vers le service de motus. Ce microservice communique avec le microservice de score pour récupérer le score de l'utilisateur. Lorsque l'utilisateur a terminé une partie, le microservice de jeu communique avec le microservice de score pour mettre à jour le score de l'utilisateur.
 
@@ -63,13 +63,13 @@ Lorsque l'utilisateur lance l'application et que sa session n'est pas encore dé
 
 ### Le jeu
 
-![Jeu](./jeu.png)
+![Jeu](images/jeu.png)
 
 ### L'authentification
 
-![Authentification](./authentification.png)
+![Authentification](images/authentification.png)
 
 ### Le monitoring
 
-![Monitoring](./monitoring.png)
+![Monitoring](images/monitoring.png)
 
