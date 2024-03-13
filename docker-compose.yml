@@ -39,8 +39,9 @@ services:
     image: mastainvinecole/haproxy-service
     ports:
       - "3005:3001"
+      - "80:3001"
     expose:
-      - 3005
+      - 80
     networks:
       - motus_network
   grafana:
