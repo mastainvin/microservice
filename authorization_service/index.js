@@ -37,7 +37,7 @@ app.get('/main', (req, res) => {
     const code = crypto.randomBytes(16).toString('hex');
     // store the code in the database with the user
     client.set('codes:' + code, req.session.user).then(r => {
-        const redirect_url = 'http://localhost:3005' + redirect_uri+ '?code=' + code;
+        const redirect_url = 'http://haproxy:3005' + redirect_uri+ '?code=' + code;
         res.redirect(redirect_url);
     });
 

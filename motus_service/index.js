@@ -128,7 +128,7 @@ app.use((req, res, next) => {
         next();
     } else {
         // Redirect to auth server with OpenID parameters
-        res.redirect(`http://localhost:3003/authorize?clientid=myclient&scope=openid&redirect_uri=/redirect`);
+        res.redirect(`http://authorization-service:3003/authorize?clientid=myclient&scope=openid&redirect_uri=/redirect`);
     }
 });
 
