@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const redis = require('redis');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const saltRounds = 10; // Number of salt rounds for bcrypt
+
 
 const app = express();
 
@@ -73,14 +76,19 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    const password_hash = crypto.createHash("sha256").update(password).digest("hex");
-
-    // Check if the username exists in Redis
-    client.get('users:' + username, password_hash).then(reply => {
-        if (reply) {
-            // Set the session user
-            req.session.user = username;
-            res.redirect('/main');
+    // Retrieve password hash from Redis
+    client.get('users:' + username).then(storedPasswordHash => {
+        if (storedPasswordHash) {
+            // Compare the provided password with the stored hash
+            bcrypt.compare(password, storedPasswordHash, (err, result) => {
+                if (result) {
+                    // Passwords match, set the session user
+                    req.session.user = username;
+                    res.redirect('/main');
+                } else {
+                    res.send('Invalid username or password');
+                }
+            });
         } else {
             res.send('Invalid username or password');
         }
@@ -102,7 +110,8 @@ app.post('/register', (req, res) => {
         res.send('Passwords do not match');
     } else {
         // Check if the username already exists in Redis
-        const password_hash = crypto.createHash("sha256").update(password).digest("hex");
+
+        const password_hash = bcrypt.hashSync(password, saltRounds);
 
         client.get('users:' + username)
             .then(reply => {

@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const client = require('prom-client');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,6 +13,34 @@ app.use(express.static('static'))
 
 app.use(express.json());
 
+
+let collectDefaultMetrics = client.collectDefaultMetrics;
+const register = new client.Registry();
+
+
+// Create custom metrics
+const http_requests_total = new client.Counter({
+    name: "http_requests_total",
+    help: "http_requests_total",
+});
+
+// Create custom metrics
+const login_total = new client.Counter({
+    name: "login_total",
+    help: "login_total",
+});
+
+
+register.registerMetric(http_requests_total);
+register.registerMetric(login_total);
+
+collectDefaultMetrics({
+    app: 'motus_service',
+    prefix: 'node_',
+    timeout: 10000,
+    gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
+    register
+});
 
 const loki_uri = process.env.LOKI;
 
@@ -26,10 +55,10 @@ const options = {
     ]
 };
 
-const logger = createLogger(options);
 
-const http_requests_total = 0;
-const login_total = 0;
+
+
+const logger = createLogger(options);
 
 
 
@@ -91,7 +120,7 @@ app.use(session({
 
 // Middleware to check if user is logged in
 app.use((req, res, next) => {
-    http_requests_total++;
+    http_requests_total.inc();
     if (req.session.username || req.path==='/redirect' || req.path==='/metrics' ) {
         if (req.session.username) {
             logger.info({ message: 'URL '+req.url , labels: { 'url': req.url, 'user': req.session.username } })
@@ -103,8 +132,9 @@ app.use((req, res, next) => {
     }
 });
 
-app.get('/metrics', (req, res) => {
-    res.send(`http_requests_total ${http_requests_total}\nlogin_total ${login_total}`);
+app.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', register.contentType);
+    res.send(await register.metrics());
 });
 
 
@@ -121,7 +151,7 @@ app.get('/redirect',  (req, res) => {
             if (err) {
                 console.log(err);
             }
-            login_total++;
+            login_total.inc();
             res.redirect('/');
         });
     });

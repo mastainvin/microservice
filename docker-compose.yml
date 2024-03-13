@@ -7,7 +7,7 @@ services:
       - LOKI=http://loki:3100
     networks:
       - motus_network
-      - monitor-net
+      - monitoring_network
     deploy:
       mode: replicated
       replicas: 2
@@ -39,9 +39,10 @@ services:
     image: mastainvinecole/haproxy-service
     ports:
       - "3005:3001"
+    expose:
+      - 3005
     networks:
       - motus_network
-      - monitor-net
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -49,7 +50,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     networks:
-      - monitor-net
+      - monitoring_network
   loki:
     image: grafana/loki
     container_name: loki
@@ -57,7 +58,7 @@ services:
       - "3100:3100"
     restart: unless-stopped
     networks:
-      - monitor-net
+      - monitoring_network
 
   prometheus:
     image: prom/prometheus
@@ -72,7 +73,7 @@ services:
     ports:
       - 9090:9090
     networks:
-      - monitor-net
+      - monitoring_network
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
@@ -91,9 +92,9 @@ services:
     ports:
       - 9100:9100
     networks:
-      - monitor-net
+      - monitoring_network
 networks:
   motus_network:
     driver: bridge
-  monitor-net:
-      driver: bridge
+  monitoring_network:
+    driver: bridge
