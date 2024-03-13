@@ -6,24 +6,40 @@
 
 SUMOT est une application basée sur l'architecture microservices. C'est un jeu reprenant le jeu du MOTUS où l'objectif est de trouver un mot en un minimum de coups.
 
+Nous avons terminé le développement de l'application. Nous avons mis en place:
+
+- Un microservice d'authentification. 
+- Un microservice du jeu motus.
+- Un microservice de score.
+- Un microservice de redis pour la base de donnée.
+- Un microservice reverse proxy pour le jeu du motus avec deux replicas.
+- Un ensemble de microservices pour l'analyse des metrics.
+
 ## Installation
 
-Tous les microservices sont des images docker. Pour les installer, il suffit de lancer la commande suivante :
-
-```bash
-docker build -t <nom_image> <chemin_dockerfile>
-```
-
-(En fin de projet les iamges seront disponibles sur le dockerhub).
+Tous les microservices sont des images docker. Ces images sont disponibles sur le docker hub.
 
 Le projet est basé sur un docker-compose. Pour lancer le projet, il suffit de lancer la commande suivante :
 
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
-## Score Management
+## Architecture générale
 
+Voici l'architecture générale de l'application :
+
+![Architecture](./architecture.png)
+
+## Sequence diagram
+
+Voici le diagramme de séquence de l'application :
+
+![Sequence diagram](./sequence_diagram.png)
+
+Lorsque l'utilisateur lance l'application et que sa session n'est pas encore définie, il est redirigé vers le microservice d'authentification. Une fois authentifié, il est redirigé vers le service de motus. Ce microservice communique avec le microservice de score pour récupérer le score de l'utilisateur. Lorsque l'utilisateur a terminé une partie, le microservice de jeu communique avec le microservice de score pour mettre à jour le score de l'utilisateur.
+
+## Score Management
 - On utilise un serveur Node.js pour gérer les scores. Avec une api basée sur express.js. La base de donnée utilisée est Redis.
 - Le port utilisé est le 3002.
 - Le serveur propose deux entrées :
@@ -36,4 +52,24 @@ docker-compose up
       "attempts": 0
     }
     ```
-- Pour l'instant nous ne pouvons gérer qu'un seul utilisateur.
+-  Ce service prend en charge plusieurs utilisateurs. 
+
+
+## Next steps
+
+- Deployer l'application sur un serveur et la rendre accessible à tous.
+
+## Captures d'écran
+
+### Le jeu
+
+![Jeu](./jeu.png)
+
+### L'authentification
+
+![Authentification](./authentification.png)
+
+### Le monitoring
+
+![Monitoring](./monitoring.png)
+

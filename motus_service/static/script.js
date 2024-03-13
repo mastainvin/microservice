@@ -47,7 +47,7 @@ $(document).ready(function() {
             }),
             success: function(data) {
                 state = data;
-                remainingAttempts = state.length / 2;
+                remainingAttempts = Math.floor(state.length / 2);
                 printState(data);
                 showAttempts();
             }
@@ -256,7 +256,7 @@ $(document).ready(function() {
 
                     // decrease remaining attempts
                     remainingAttempts--;
-                    if (remainingAttempts === 0) {
+                    if (remainingAttempts <= 0) {
                         alert("You lost!");
                         set_score_in_bdd(gamesWon, attempts);
                         initGame();
