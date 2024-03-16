@@ -25,8 +25,6 @@ Le projet est basé sur un docker-compose. Pour lancer le projet, il suffit de l
 docker-compose up --build
 ```
 
-Puis le port utilisé est le 3005.
-
 ## Architecture générale
 
 Voici l'architecture générale de l'application :
